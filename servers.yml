@@ -1,0 +1,25 @@
+---
+- name: localhost1
+  hostname: 127.0.0.1:8020
+  is_localhost: true
+  options:
+    bre: false
+    authorization: true
+    appeals: true
+    links: true
+    text: true
+    
+- name: localhost2
+  hostname: 127.0.0.1:8030
+  is_localhost: true
+  options:
+    bre: false
+    authorization: false
+    appeals: false
+    links: false
+    text: true
+
+- name: localhost3
+  hostname: 127.0.0.1:8050
+  is_localhost: false
+...

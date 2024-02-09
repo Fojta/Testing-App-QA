@@ -1,0 +1,394 @@
+{% extends 'base.html' %}
+
+{% block head %}
+
+{% endblock %}
+
+{% block body %}
+<nav class="navbar bg-body-tertiary"> <!-- MENU -->
+    <div class="form-check form-switch">
+        <input class="form-check-input" type="checkbox" id="selector">
+        <label class="form-check-label" for="selector">Dark/Light</label>
+    </div>
+</nav>
+
+<table class="table table-dark table-hover"> <!-- TABLE -->
+    <tr>
+        <th><h2>Server</h2></th>
+        {% for key, value in servers[0].options.items() %}
+            {% if value %}
+                <th><h2>{{ key.capitalize() }}</h2></th>
+            {% endif %}
+        {% endfor %}
+    </tr>
+    {% for server in servers %}
+        <tr class="tab-row">
+            <td><div class="servername"><h5>{{ server.name }}</h5></div></td>
+            {% for key, value in server.options.items() %}
+                {% if value %}
+                    <td>
+                        {% if key == "bre" %}
+                                <div content="bre">
+                                    <form action="/update_bre/{{ server.name }}" method="POST">
+								    {% if server.name == "localhost" %}
+									<input type="submit" value="Update BRE" id="update_bre" class="btn btn-outline-light">
+								    {% else %}
+									<input type="submit" value="Update BRE" class="btn btn-outline-light" disabled>
+								    {% endif %}
+							        </form>
+                                </div>
+                        {% elif key == "authorization" %}
+                            <div content="authorization">
+								<form action="/create_authorization_sp/{{ server.name }}" method="POST">
+									<input type="button" value="Create SP Authorization" id="sp_auth" class="btn btn-outline-light">
+								</form>
+								<form action="/create_authorization_ip/{{ server.name }}" method="POST">
+									<input type="button" value="Create IP Authorization" id="ip_auth" class="btn btn-outline-light">
+								</form>
+								<form action="/create_authorization_rx/{{ server.name }}" method="POST">
+									<input type="button" value="Create RX Authorization" id="rx_auth" class="btn btn-outline-light">
+								</form>
+								<form action="/determinne_line_item/{{ server.name }}" method="POST">
+									<input type="button" value="Determine Line Item" id="determine_li" class="btn btn-outline-light">
+								</form>
+								<button type="button" class="btn btn-outline-light" id="insert" onclick="insertToField(this)">CLICK ME</button>
+							</div>
+                        {% elif key == "appeals" %}
+                            <div content="Appeals">
+								<form action="/create_appeal/{{ server.name }}" method="POST">
+									<input type="button" value="Create Appeal" id="create_appeal" class="btn btn-outline-light">
+								</form>
+								<form action="/add_outcome/{{ server.name }}" method="POST">
+									<input type="button" value="Create Outcome" id="create_outcome" class="btn btn-outline-light">
+								</form>
+								<form action="/add_advisor_review/{{ server.name }}" method="POST">
+									<input type="button" value="Create Advisor Review" id="create_advisor_review" class="btn btn-outline-light">
+								</form>
+								<form action="/add_clinical_review/{{ server.name }}" method="POST">
+									<input type="button" value="Create Clinical Review" id="create_clinical_review" class="btn btn-outline-light">
+								</form>
+							</div>
+                        {% elif key == "links" %}
+                            <a href="http://{{ server.hostname }}:8085/casenet-server/">TC Client</a><br>
+							<a href="/tc_client/{{ server.name }}">TC Client - Authorizations</a><br>
+							<a href="http://{{ server.hostname }}:8080/rma/">RMA</a><br>
+							<a href="http://{{ server.hostname }}:8080/casenet-analytics/login.html">Jasper</a><br>
+							<a href="http://{{ server.hostname }}:8080/casenet-server/api-site/api-docs/">Swagger</a>
+                        {% elif key == "text" %}
+                            <div id="txt">
+                                <textarea readonly id="responses"></textarea>
+                                <div id="buttons">
+                                    <button value="Save as file" type="button" class="btn btn-outline-light" onclick="saveToFile(this)">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-floppy-fill" viewBox="0 0 20 20">
+                                            <path d="M0 1.5A1.5 1.5 0 0 1 1.5 0H3v5.5A1.5 1.5 0 0 0 4.5 7h7A1.5 1.5 0 0 0 13 5.5V0h.086a1.5 1.5 0 0 1 1.06.44l1.415 1.414A1.5 1.5 0 0 1 16 2.914V14.5a1.5 1.5 0 0 1-1.5 1.5H14v-5.5A1.5 1.5 0 0 0 12.5 9h-9A1.5 1.5 0 0 0 2 10.5V16h-.5A1.5 1.5 0 0 1 0 14.5z"></path>
+                                            <path d="M3 16h10v-5.5a.5.5 0 0 0-.5-.5h-9a.5.5 0 0 0-.5.5zm9-16H4v5.5a.5.5 0 0 0 .5.5h7a.5.5 0 0 0 .5-.5zM9 1h2v4H9z"></path>
+                                        </svg>
+                                    </button>
+                                    <button value="Copy to clipboard" type="button" class="btn btn-outline-light copy-btn">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-copy" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M4 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2zm2-1a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1zM2 5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-1h1v1a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h1v1z"></path>
+                                        </svg>
+                                    </button>
+                                    <button value="Delete" type="button" class="btn btn-outline-light delete-btn">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-trash3" viewBox="0 0 20 20">
+                                            <path d="M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5M11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 0 5 1.5v1H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66h.538a.5.5 0 0 0 0-1zm1.958 1-.846 10.58a1 1 0 0 1-.997.92h-6.23a1 1 0 0 1-.997-.92L3.042 3.5zm-7.487 1a.5.5 0 0 1 .528.47l.5 8.5a.5.5 0 0 1-.998.06L5 5.03a.5.5 0 0 1 .47-.53Zm5.058 0a.5.5 0 0 1 .47.53l-.5 8.5a.5.5 0 1 1-.998-.06l.5-8.5a.5.5 0 0 1 .528-.47M8 4.5a.5.5 0 0 1 .5.5v8.5a.5.5 0 0 1-1 0V5a.5.5 0 0 1 .5-.5"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </td>
+                {% else %}
+                    <td></td>
+                {% endif %}
+			{% endfor %}
+        </tr>
+    {% endfor %}
+</table>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {                      <!-- DARK/LIGHT MODE SWITCH -->
+            document.getElementById("selector").addEventListener("change", function() {
+                var body = document.querySelector("body");
+                var nav = document.querySelector("nav");
+                var table = document.querySelector("table");
+                var button = document.querySelector("button");
+                var inputButtons = document.querySelectorAll("input[type='button']");
+                var submits = document.querySelectorAll("input[type='submit']");
+                var buttonButton = document.querySelectorAll("button[type='button']");
+
+                if (this.checked) {
+                    body.setAttribute("data-bs-theme", "light");
+                    nav.setAttribute("class","navbar navbar-light bg-light");
+                    table.setAttribute("class", "table table-light table-hover");
+                    button.setAttribute("class", "btn btn-outline-dark");
+                    inputButtons.forEach(function(inputButton) {
+                            inputButton.setAttribute("class", "btn btn-outline-dark");
+                    });
+                    submits.forEach(function(submit) {
+                            submit.setAttribute("class", "btn btn-outline-dark");
+                    });
+                    buttonButton.forEach(function(buttons) {
+                            buttons.setAttribute("class", "btn btn-outline-dark");
+                    });
+                }
+                else {
+                    body.setAttribute("data-bs-theme", "dark");
+                    nav.setAttribute("class", "navbar bg-body-tertiary");
+                    table.setAttribute("class", "table table-dark table-hover");
+                    button.setAttribute("class", "btn btn-outline-light");
+                    inputButtons.forEach(function(inputButton) {
+                            inputButton.setAttribute("class", "btn btn-outline-light");
+                    });
+                    submits.forEach(function(submit) {
+                            submit.setAttribute("class", "btn btn-outline-light");
+                    });
+                    buttonButton.forEach(function(buttons) {
+                            buttons.setAttribute("class", "btn btn-outline-light");
+                    });
+                }
+            });
+        });
+
+    $(document).ready(function() {                                                      <!-- jQuery button as submit -->
+        $("#sp_auth").click(function() {
+            $.ajax({
+                type: "POST",
+                url: $("#sp_auth").attr("action"),
+                success: function(response) {
+                    alert(response.message);
+                },
+                error: function(xhr, status, error) {
+                    alert("Failed to create SP authorization: " + xhr.responseText);
+                }
+            });
+        });
+
+        $("#ip_auth").click(function() {
+           $.ajax({
+                type: "POST",
+                url: $("#ip_auth").attr("action"),
+                success: function(response) {
+                    alert(response.message);
+                },
+                error: function(xhr, status, error) {
+                    alert("Failed to create IP authorization: " + xhr.responseText);
+                }
+            });
+        });
+
+        $("#rx_auth").click(function() {
+        $.ajax({
+                type: "POST",
+                url: $("#rx_auth").attr("action"),
+                success: function(response) {
+                    alert(response.message);
+                },
+                error: function(xhr, status, error) {
+                    alert("Failed to create RX authorization: " + xhr.responseText);
+                }
+            });
+        });
+
+        $("#determine_li").click(function() {
+        $.ajax({
+                type: "POST",
+                url: $("#determine_li").attr("action"),
+                success: function(response) {
+                    alert(response.message);
+                },
+                error: function(xhr, status, error) {
+                    alert("Failed to create SP authorization: " + xhr.responseText);
+                }
+            });
+        });
+
+        $("#create_appeal").click(function() {
+            $.ajax({
+                type: "POST",
+                url: $("#create_appeal").attr("action"),
+                success: function(response) {
+                    alert(response.message);
+                },
+                error: function(xhr, status, error) {
+                    alert("Failed to create appeal: " + xhr.responseText);
+                }
+            });
+        });
+
+        $("#create_outcome").click(function() {
+            $.ajax({
+                type: "POST",
+                url: $("#create_outcome").attr("action"),
+                success: function(response) {
+                    alert(response.message);
+                },
+                error: function(xhr, status, error) {
+                    alert("Failed to create outcome: " + xhr.responseText);
+                }
+            });
+        });
+
+        $("#create_advisor_review").click(function() {
+            $.ajax({
+                type: "POST",
+                url: $("#create_advisor_review").attr("action"),
+                success: function(response) {
+                    alert(response.message);
+                },
+                error: function(xhr, status, error) {
+                    alert("Failed to create advisor review: " + xhr.responseText);
+                }
+            });
+        });
+
+        $("#create_clinical_review").click(function() {
+            $.ajax({
+                type: "POST",
+                url: $("#create_clinical_review").attr("action"),
+                success: function(response) {
+                    alert(response.message);
+                },
+                error: function(xhr, status, error) {
+                    alert("Failed to create clinical review: " + xhr.responseText);
+                }
+            });
+        });
+    });
+
+    function insertToField(button) {                                                    <!-- inserting testing text into textarea -->
+        // Find the parent row of the button
+        var parentRow = button.closest(".tab-row");
+
+        // Find the textarea within the same row
+        var textarea = parentRow.querySelector("textarea");
+
+        // Update the content of the textarea
+        textarea.value = "pokus"; // Use .value to set textarea content
+    }
+
+    // Get all "CLICK ME" buttons
+    document.addEventListener("DOMContentLoaded", function() {
+        var buttons = document.querySelectorAll("#insert");
+
+        // Attach click event listener to each button
+        buttons.forEach(function(button) {
+            button.addEventListener("click", function() {
+                insertToField(this); // Pass the button as argument
+            });
+        });
+    });
+
+
+   function saveToFile(button) {                                                        <!-- save textarea as file -->
+    // Get the parent row of the button
+    var parentRow = button.closest(".tab-row");
+
+    // Find the textarea within the same row
+    var textarea = parentRow.querySelector("textarea");
+
+    // Get the content of the textarea
+    var content = textarea.value;
+
+    // Ensure content is not empty
+    if (content.trim() === "") {
+        alert("Textarea is empty. Please enter some text.");
+        return;
+    }
+
+    // Create a Blob containing the text
+    var blob = new Blob([content], { type: "text/plain" });
+
+    // Create a temporary anchor element
+    var a = document.createElement("a");
+    a.style.display = "none";
+
+    // Set the URL of the file
+    var url = window.URL.createObjectURL(blob);
+    a.href = url;
+
+    // Set the filename
+    a.download = "myFile.txt";
+
+    // Append the anchor to the body
+    document.body.appendChild(a);
+
+    // Trigger a click event on the anchor
+    a.click();
+
+    // Cleanup
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+}
+                                                                            // JavaScript code to copy textarea content
+document.addEventListener("DOMContentLoaded", function() {
+    // Get all copy buttons
+    var copyButtons = document.querySelectorAll(".copy-btn");
+
+    // Add click event listener to each copy button
+    copyButtons.forEach(function(copyButton) {
+        copyButton.addEventListener("click", function() {
+            // Find the textarea in the same row
+            var row = this.closest(".tab-row");
+            var textarea = row.querySelector("textarea");
+
+            // Select the content of the textarea
+            textarea.select();
+            textarea.setSelectionRange(0, textarea.value.length);
+
+            // Copy the selected content to the clipboard
+            document.execCommand("copy");
+
+            // Deselect the textarea
+            textarea.blur();
+
+            // Optionally, provide feedback to the user
+            alert("Text copied!");
+        });
+    });
+});
+
+   document.addEventListener("DOMContentLoaded", function() {
+    var deleteButtons = document.querySelectorAll(".delete-btn");
+
+    deleteButtons.forEach(function(deleteButton) {
+        deleteButton.addEventListener("click", function() {
+            var row = this.closest(".tab-row");
+            var textarea = row.querySelector("textarea");
+            textarea.value = ''; // Set the value of the textarea to an empty string
+        });
+    });
+});
+
+    </script>
+
+{% endblock %}
+
+<!--  DIFFERENT SOLUTION FOR SUBMIT REPLACE AS BUTTON
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var form = document.getElementById('myForm');
+    var button = document.getElementById('myButton');
+
+    button.addEventListener('click', function() {
+        fetch('/update_bre/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({}), // unused
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log(data);
+            alert('BRE Updated!');
+        })
+        .catch(error => {
+            console.error('Failed updating BRE:', error);
+        });
+    });
+});
+</script>
+
+-->
