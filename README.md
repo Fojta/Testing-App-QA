@@ -15,7 +15,7 @@ Index soubor obsahuje rozložení webové stránky včetně skriptů JavaScript 
 
 ***ENGLISH***
 
-Application QA team that I helped improve and implement new features during my internship.
+Application of QA team that I helped improve and implement new features during my internship.
 
  *static/css* - contains a CSS file.  Customizing the appearance of a website using bootstrap.
  
